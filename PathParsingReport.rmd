@@ -1,0 +1,60 @@
+---
+title: "Prostate Path Parsing"
+subtitle: "Comparison of Output"
+author: "Anobel Y. Odisho, Mark Bridge, Matthew R. Cooperberg"
+date: "`r Sys.Date()`"
+output:
+      html_document
+      # tufterhandout::html_tufte_handout:
+      # theme: cosmo
+      # css: floating.css
+      # toc: no
+
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.width = 12, cache = F)
+```
+
+
+```{r}
+# load packages
+# library(dplyr)
+library(knitr)
+
+# load data
+load(file="data/tidy/pp.rda")
+
+```
+
+# To Do
+- can Mark re-extract data file that Matt gave me? we should pick up a lot more SDEs and parsed path reports, then can go through and abstract manually to confirm, update into UODB
+- is there a data dictionary?
+- if errors, feed back to mark to update regualr expressions
+- path node status from UODB and SDE is all missing
+
+# Gleason
+
+## Available Data
+
+make a table of available/missing values for u, p, s, prim, secondary
+
+```{r}
+# use dplyr and lapply to make table of missing values for primary/gleason by all u, p, s
+# pp %>%
+#   select(endsWith(gprimp), endsWith(gsecondp)) %>%
+#   summary(is.na()) %>%
+#   table() %>%
+#   kable()
+
+```
+
+## Missing Data
+- make cross tabs of missing data...betwen U, P, S, primary and secondary
+- which is my gold standard? U? then it should be the most complete
+- if available as SDE and parsed path, and missing in UODB, then should be manually entered
+
+```{r}
+
+
+```
