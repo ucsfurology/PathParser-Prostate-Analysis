@@ -3,7 +3,10 @@
 library(stringr)
 
 # Import data from Coop
-pp <- read.csv("data/raw/results-20170710.csv", header = T, stringsAsFactors = T)
+pp <- read.csv("data/raw/results-201710150-deidentified.csv",
+              header = T,
+              stringsAsFactors = F,
+              na.strings = c("NULL"))
 
 colnames(pp) <- str_to_lower(colnames(pp))
 
@@ -11,25 +14,27 @@ colnames(pp) <- str_to_lower(colnames(pp))
 v <- list()
 v$sources <- c("u", "s", "p")
 v$gnames <- c("_gprimp", "_gsecondp", "_gtertp") 
-v$gleasonfields <- paste0(rep(sources, each=3), v$gnames)
+v$gleasonfields <- paste0(rep(v$sources, each=3), v$gnames)
 
 v$tstagefields <- paste0(v$sources, "_tstagep")
 v$nstagefields <- paste0(v$sources, "_nstagep")
 v$marginfields <- paste0(v$sources, "_pathmgnpos")
 v$node_status <- paste0(v$sources, "_pathnodes_status")
-v$node_dissected <- paste0(sources, "_pathnodes_dissected")
-v$node_pos <- paste0(sources, "_pathnodes_positive")
-v$svi_pos <- paste0(sources, "_pathsvipos")
-v$ece_pos <- paste0(sources, "_pathecepos")
+v$node_dissected <- paste0(v$sources, "_pathnodes_dissected")
+v$node_pos <- paste0(v$sources, "_pathnodes_positive")
+v$svi_pos <- paste0(v$sources, "_pathsvipos")
+v$ece_pos <- paste0(v$sources, "_pathecepos")
 
 # Convert Gleason Score fields to factors
-pp[,gleasonfields] <- as.data.frame(lapply(pp[,gleasonfields], as.factor))
+pp[,v$gleasonfields] <- as.data.frame(lapply(pp[,v$gleasonfields], as.factor))
 
-# Check if Stage fields are correctly listed as factors
-lapply(pp[,c(v$tstagefields, v$nstagefields)], is.factor)
+# Convert if T and n stage fields to factors
+pp[,c(v$tstagefields, v$nstagefields)] <- as.data.frame(lapply(pp[,c(v$tstagefields, v$nstagefields)], as.factor))
 
-# Check if number of nodes dissected, node positive fields are stored as a number
-lapply(pp[,c(v$node_dissected, v$node_pos)], is.numeric)
+# Convert number of nodes dissected and number of nodes positive to numeric
+# will lose any that are slightly incorrect, which is OK (shows parser didnt work)
+pp[,c(v$node_dissected, v$node_pos)] <- as.data.frame(lapply(pp[,c(v$node_dissected, v$node_pos)], as.numeric))
+lapply(pp[,], is.numeric)
 
 # Convert 0/1 fields to true/false
 pp[,c(v$marginfields, v$node_status, v$svi_pos, v$ece_pos)] <- pp[,c(v$marginfields, v$node_status, v$svi_pos, v$ece_pos)] == 1
