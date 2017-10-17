@@ -10,6 +10,9 @@ pp <- read.csv("data/raw/results-201710150-deidentified.csv",
 
 colnames(pp) <- str_to_lower(colnames(pp))
 
+# Drop PatID (its blank, but just to be sure in future data extracts)
+pp$pat_id <- NULL
+
 # Define useful vectors for field names
 v <- list()
 v$sources <- c("u", "s", "p")
@@ -37,7 +40,17 @@ pp[,c(v$node_dissected, v$node_pos)] <- as.data.frame(lapply(pp[,c(v$node_dissec
 lapply(pp[,], is.numeric)
 
 # Convert 0/1 fields to true/false
-pp[,c(v$marginfields, v$node_status, v$svi_pos, v$ece_pos)] <- pp[,c(v$marginfields, v$node_status, v$svi_pos, v$ece_pos)] == 1
+pp[,c(v$marginfields, v$svi_pos, v$ece_pos)] <- pp[,c(v$marginfields, v$svi_pos, v$ece_pos)] == 1
+
+# Certain UODB fields, if blank, need to be set to null
+pp$u_nstagep[pp$u_nstagep==""] <- NA
+
+# Do we need to populate u_pathnodes_status field?
+
+
+
+# Drop unused levels throughout df
+pp <- droplevels(pp)
 
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
