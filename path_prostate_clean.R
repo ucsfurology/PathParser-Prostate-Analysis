@@ -11,7 +11,7 @@ pp <- read.csv("data/raw/results-201710150-deidentified.csv",
 colnames(pp) <- str_to_lower(colnames(pp))
 
 # Drop PatID (its blank, but just to be sure in future data extracts)
-pp$pat_id <- NULL
+pp$pat_id <- 1:nrow(pp)
 
 # Define useful vectors for field names
 v <- list()
@@ -47,10 +47,13 @@ pp$u_nstagep[pp$u_nstagep==""] <- NA
 
 # Do we need to populate u_pathnodes_status field?
 
-
-
 # Drop unused levels throughout df
 pp <- droplevels(pp)
+
+# Mark Fields as complete
+pp$u_glcomplete <- ifelse(!is.na(pp$u_gprimp) & !is.na(pp$u_gsecondp), T, F)
+pp$s_glcomplete <- ifelse(!is.na(pp$s_gprimp) & !is.na(pp$s_gsecondp), T, F)
+pp$p_glcomplete <- ifelse(!is.na(pp$p_gprimp) & !is.na(pp$p_gsecondp), T, F)
 
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
