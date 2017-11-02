@@ -54,6 +54,6 @@ pp <- droplevels(pp)
 pp$u_glcomplete <- ifelse(!is.na(pp$u_gprimp) & !is.na(pp$u_gsecondp), T, F)
 pp$s_glcomplete <- ifelse(!is.na(pp$s_gprimp) & !is.na(pp$s_gsecondp), T, F)
 pp$p_glcomplete <- ifelse(!is.na(pp$p_gprimp) & !is.na(pp$p_gsecondp), T, F)
-
+pp$all_glcomplete <- ifelse(pp$u_glcomplete & pp$s_glcomplete & pp$p_glcomplete, T, F)
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
