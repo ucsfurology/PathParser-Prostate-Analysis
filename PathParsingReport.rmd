@@ -1,15 +1,14 @@
 ---
 title: "Prostate Path Parsing"
 subtitle: "Comparison of Output"
-author: "Anobel Y. Odisho, Mark Bridge, Matthew R. Cooperberg"
-date: "`r Sys.Date()`"
-output:
-      html_document
-      # tufterhandout::html_tufte_handout:
-      # theme: cosmo
-      # css: floating.css
-      # toc: no
-
+author: "Data Date: 2017-10-15"
+date: "Report Date: `r Sys.Date()`"
+output: 
+  tufterhandout::html_tufte_handout:
+        theme: cosmo
+        toc: true
+        toc_float: true
+        toc_depth: 2
 ---
 
 ```{r global_options, include=FALSE}
@@ -19,42 +18,142 @@ knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.width = 12, cache 
 
 ```{r}
 # load packages
-# library(dplyr)
+library(dplyr)
+library(tidyr)
 library(knitr)
+library(pander)
+library(stargazer)
+library(DT)
+
 
 # load data
 load(file="data/tidy/pp.rda")
 
+# Create empty list to hold results
+r <- list()
+
+# Define the variables for which I want to do comparisons
+vars <- c("glcombined", 
+          "pathmgnpos", "pathecepos", "pathsvipos", 
+          "pathnodes_dissected", "pathnodes_positive", "pathnodes_status",
+          "tstagep", "nstagep")
 ```
 
+
+```{r functions}
+# Function to compare 2 data types against each other
+compare2 <- function(x, y, varname) {
+  # x is the first data source that will be used in the comparison
+  # y is the first data source that will be used in the comparison
+  # varname represents variables to compare
+  x_compare <- paste0(x,"_",varname)
+  y_compare <- paste0(y,"_",varname)
+  
+  total <- sum(!is.na(pp[,x_compare] == pp[,y_compare]))
+  correct <- sum(pp[,x_compare] == pp[,y_compare], na.rm=T)
+
+  result <- c(
+    sprintf("%.0f",total), 
+    sprintf("%.1f%%", (correct/total)*100)
+  )
+  m <- matrix(result, 1, 2)
+  colnames(m) <- c(paste(x,"vs.", y, "(n)"),paste(x,"vs.", y, "(%)"))
+  rownames(m) <- varname
+  return(m)
+}
+
+# Function to compare all 3 data types against each other
+compare3 <- function(varname) {
+  # y represents variables to compare
+  p_compare <- paste0("p_",varname)
+  s_compare <- paste0("s_",varname)
+  u_compare <- paste0("u_",varname)
+  total <- sum(!is.na(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare]))
+  correct <- sum(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare], na.rm = T)
+  
+  result <- c(
+    sprintf("%.0f",total), 
+    sprintf("%.1f%%", (correct/total)*100)
+  )
+  m <- matrix(result, 1, 2)
+  colnames(m) <- c("All 3 (n)","All 3 (%)")
+  rownames(m) <- varname
+  return(m)
+}
+
+# Functiomn to make wide table of comparisons
+allcomparisons <- function(x) {
+  cbind(
+    compare2("u", "p", x),
+    compare2("u", "s", x),
+    compare2("p", "s", x),
+    compare3(x)
+  )  
+}
+
+
+```
 # To Do
-- can Mark re-extract data file that Matt gave me? we should pick up a lot more SDEs and parsed path reports, then can go through and abstract manually to confirm, update into UODB
-- is there a data dictionary?
-- if errors, feed back to mark to update regualr expressions
-- path node status from UODB and SDE is all missing
 
-# Gleason
+# Available Data
 
-## Available Data
+- Total records: `r nrow(pp)`
 
-make a table of available/missing values for u, p, s, prim, secondary
-
+## All Variables
 ```{r}
-# use dplyr and lapply to make table of missing values for primary/gleason by all u, p, s
-# pp %>%
-#   select(endsWith(gprimp), endsWith(gsecondp)) %>%
-#   summary(is.na()) %>%
-#   table() %>%
-#   kable()
-
+data.frame(
+            "Variable" = colnames(pp),
+            "Values Present" = apply(pp, 2, function(x) sum(!is.na(x))),
+            "Data Present Percent" = apply(pp, 2, function(x) round((sum(!is.na(x))/nrow(pp))*100,2)),
+            row.names = NULL
+            ) %>% datatable()
 ```
 
-## Missing Data
-- make cross tabs of missing data...betwen U, P, S, primary and secondary
-- which is my gold standard? U? then it should be the most complete
-- if available as SDE and parsed path, and missing in UODB, then should be manually entered
+# Gleason (Primary/Secondary)
 
 ```{r}
+glreport <- data.frame(
+  Category = c(
+    "Complete cases from UODB", 
+    "Complete cases from SDE",
+    "Complete cases from Parser",
+    "Complete cases from UODB and SDE",
+    "Complete cases from UODB and Parser",
+    "Complete cases from UODB, SDE, Parser"
+  ),
+  Primary = c(
+    sum(!is.na(pp$u_gprimp)),
+    sum(!is.na(pp$s_gprimp)),
+    sum(!is.na(pp$p_gprimp)),
+    sum(!is.na(pp$u_gprimp) & !is.na(pp$s_gprimp)),
+    sum(!is.na(pp$u_gprimp) & !is.na(pp$p_gprimp)),
+    sum(!is.na(pp$u_gprimp) & !is.na(pp$s_gprimp) & !is.na(pp$p_gprimp))
+  ),
+  Secondary = c(
+    sum(!is.na(pp$u_gsecondp)),
+    sum(!is.na(pp$s_gsecondp)),
+    sum(!is.na(pp$p_gsecondp)),
+    sum(!is.na(pp$u_gsecondp) & !is.na(pp$s_gsecondp)),
+    sum(!is.na(pp$u_gsecondp) & !is.na(pp$p_gsecondp)),
+    sum(!is.na(pp$u_gsecondp) & !is.na(pp$s_gsecondp) & !is.na(pp$p_gsecondp))
+  ),
+  Both = c(
+    sum(pp$u_glcomplete),
+    sum(pp$s_glcomplete),
+    sum(pp$p_glcomplete),
+    sum(pp$u_glcomplete & pp$s_glcomplete),
+    sum(pp$u_glcomplete & pp$p_glcomplete),
+    sum(pp$u_glcomplete & pp$s_glcomplete & pp$p_glcomplete)
+  )
+)
 
+kable(glreport)
+```
 
+# All Comparisons
+```{r}
+t <- lapply(vars, allcomparisons)
+t <- do.call(rbind, t)
+
+kable(t)
 ```
