@@ -31,56 +31,56 @@ v$svi_pos <- paste0(v$sources, "_pathsvipos")
 v$ece_pos <- paste0(v$sources, "_pathecepos")
 
 # Convert Gleason Score fields to factors
-pp[,v$gleasonfields] <- as.data.frame(lapply(pp[,v$gleasonfields], as.factor))
 
-# Convert if T and n stage fields to factors
-pp[,c(v$tstagefields, v$nstagefields)] <- as.data.frame(lapply(pp[,c(v$tstagefields, v$nstagefields)], as.factor))
+# pp[,v$gleasonfields] <- as.data.frame(lapply(pp[,v$gleasonfields], 
+#                                              factor,
+#                                              c(3,4,5,"Missing")
+#                                              )
+#                                       )
+
+# Convert T stage fields to factors
+pp[,c(v$tstagefields)] <- as.data.frame(lapply(pp[,c(v$tstagefields)],
+                                              factor,
+                                              c("2a", "2b", "2c", "3a", "3b", "4", "x", "Missing")
+                                              )
+                                        )
+
+# Convert if N stage fields to factors
+pp[,c(v$nstagefields)] <- as.data.frame(lapply(pp[,c(v$nstagefields)],
+                                               factor,
+                                               c("0", "1", "x", "Missing")
+                                               )
+                                        )
 
 # Convert number of nodes dissected and number of nodes positive to numeric
 # will lose any that are slightly incorrect, which is OK (shows parser didnt work)
-pp[,c(v$node_dissected, v$node_pos)] <- as.data.frame(lapply(pp[,c(v$node_dissected, v$node_pos)], as.numeric))
+# pp[,c(v$node_dissected, v$node_pos)] <- as.data.frame(lapply(pp[,c(v$node_dissected, v$node_pos)], as.numeric))
 
 # Convert 0/1 fields to true/false
-pp[,c(v$marginfields, v$svi_pos, v$ece_pos)] <- pp[,c(v$marginfields, v$svi_pos, v$ece_pos)] == 1
+pp[,c(v$marginfields, v$svi_pos, v$ece_pos, v$node_status)] <- pp[,c(v$marginfields, v$svi_pos, v$ece_pos, v$node_status)] == 1
 
-# Certain UODB fields, if blank, need to be set to null
-pp$u_nstagep[pp$u_nstagep==""] <- NA
+# Path Nodes Status is left out of calculations because its not populated in the UODB data
 
-###########################
-# Do we need to populate u_pathnodes_status field?
+# Gleason
+pp[!is.na(pp$p_glsn_raw) & (is.na(pp$p_gprimp) | is.na(pp$p_gsecondp)),c("p_gprimp", "p_gsecondp")] <- "Missing"
 
-# Convert tstage and nstage fields to characters
-pp$u_tstagep <- sapply(pp$u_tstagep, as.character)
-pp$p_tstagep <- sapply(pp$p_tstagep, as.character)
-pp$s_tstagep <- sapply(pp$s_tstagep, as.character)
+# T Stage
+pp[!is.na(pp$p_stagep_raw) & is.na(pp$p_tstagep),"p_tstagep"] <- "Missing"
 
-pp$u_nstagep <- sapply(pp$u_nstagep, as.character)
-pp$p_nstagep <- sapply(pp$p_nstagep, as.character)
-pp$s_nstagep <- sapply(pp$s_nstagep, as.character)
+# N Stage
+pp[!is.na(pp$p_stagep_raw) & is.na(pp$p_tstagep),"p_tstagep"] <- "Missing"
 
+pp[!is.na(pp$p_pathecepos_raw) & is.na(pp$p_pathecepos),"p_pathecepos"] <- "Missing"
 
-# Drop unused levels throughout df
-pp <- droplevels(pp)
+pp[!is.na(pp$p_pathmgnpos_raw) & is.na(pp$p_pathmgnpos),"p_pathmgnpos"] <- "Missing"
 
-# Set the BLANK fields to NA
-# Parser Gleason Tertiary
-pp$p_gtertp[pp$p_gtertp ==""] <- NA
+pp[!is.na(pp$p_pathsvipos_raw) & is.na(pp$p_pathsvipos),"p_pathsvipos"] <- "Missing"
 
-# Parser Gleason RAW
-pp$p_glsn_raw[pp$p_glsn_raw ==""] <- NA
+pp[!is.na(pp$p_pathnodes_status_raw) & is.na(pp$p_pathnodes_status),"p_pathnodes_status"] <- "Missing"
 
-# Parser Gleason RAW
-pp$p_pathmgnpos_raw[pp$p_pathmgnpos_raw ==""] <- NA
+pp[!is.na(pp$p_pathnodes_positive_raw) & is.na(pp$p_pathnodes_positive),c("p_pathnodes_positive")] <- "Missing"
 
-
-# SDE Gleason RAW
-pp$s_glsn_raw[pp$s_glsn_raw ==""] <- NA
-
-# Mark Fields as complete
-pp$u_glcomplete <- ifelse(!is.na(pp$u_gprimp) & !is.na(pp$u_gsecondp), T, F)
-pp$s_glcomplete <- ifelse(!is.na(pp$s_gprimp) & !is.na(pp$s_gsecondp), T, F)
-pp$p_glcomplete <- ifelse(!is.na(pp$p_gprimp) & !is.na(pp$p_gsecondp), T, F)
-pp$all_glcomplete <- ifelse(pp$u_glcomplete & pp$s_glcomplete & pp$p_glcomplete, T, F)
+pp[!is.na(pp$p_pathnodes_dissected_raw) & is.na(pp$p_pathnodes_dissected),c("p_pathnodes_dissected")] <- "Missing"
 
 # Create combined Gleason score Fields for easier comparisons
 pp$u_glcombined = paste0(pp$u_gprimp,"+",pp$u_gsecondp)
@@ -88,15 +88,38 @@ pp$s_glcombined = paste0(pp$s_gprimp,"+",pp$s_gsecondp)
 pp$p_glcombined = paste0(pp$p_gprimp,"+",pp$p_gsecondp)
 
 # Remove NA fields that are generated when its missing for both
+pp$u_glcombined[pp$u_glcombined == "Missing+Missing"] <- "Missing"
+pp$p_glcombined[pp$p_glcombined == "Missing+Missing"] <- "Missing"
+pp$s_glcombined[pp$s_glcombined == "Missing+Missing"] <- "Missing"
+
 pp$u_glcombined[pp$u_glcombined == "NA+NA"] <- NA
-pp$s_glcombined[pp$s_glcombined == "NA+NA"] <- NA
 pp$p_glcombined[pp$p_glcombined == "NA+NA"] <- NA
+pp$s_glcombined[pp$s_glcombined == "NA+NA"] <- NA
 
-#########################
-# need to identify where the parser had RAW text, but failed to pull a value. this isnt a NA
-# Because NA in this dataset implies there was no attempt at parsing/abstraction/SDE
-# its a MISSING value
+pp$u_glcombined <- factor(pp$u_glcombined, 
+                            levels = c(
+                            "3+3", "3+4", "3+5",
+                            "4+3", "4+4", "4+5",
+                            "5+3", "5+4", "5+5",
+                            "Missing"
+                          )
+                        )
 
-
+pp$p_glcombined <- factor(pp$p_glcombined, 
+                          levels = c(
+                            "3+3", "3+4", "3+5",
+                            "4+3", "4+4", "4+5",
+                            "5+3", "5+4", "5+5",
+                            "Missing"
+                          )
+                        )
+pp$s_glcombined <- factor(pp$s_glcombined, 
+                          levels = c(
+                            "3+3", "3+4", "3+5",
+                            "4+3", "4+4", "4+5",
+                            "5+3", "5+4", "5+5",
+                            "Missing"
+                          )
+                        )
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")

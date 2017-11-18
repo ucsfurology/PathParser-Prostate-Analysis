@@ -68,9 +68,8 @@ compare3 <- function(varname) {
   p_compare <- paste0("p_",varname)
   s_compare <- paste0("s_",varname)
   u_compare <- paste0("u_",varname)
-  total <- sum(!is.na(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare]))
+  total <- sum(!is.na(pp[,u_compare]) & !is.na(pp[,s_compare]) & !is.na(pp[,p_compare]))
   correct <- sum(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare], na.rm = T)
-  
   result <- c(
     sprintf("%.0f",total), 
     sprintf("%.1f%%", (correct/total)*100)
@@ -91,6 +90,21 @@ allcomparisons <- function(x) {
   )  
 }
 
+crosstables <- function(varname) {
+  p_compare <- paste0("p_",varname)
+  s_compare <- paste0("s_",varname)
+  u_compare <- paste0("u_",varname)
+  t <- list()
+  t$t1 <- table(!is.na(pp[,p_compare]), !is.na(pp[,u_compare]), dnn=c("Parser", "UODB"))
+  t$t2 <- table(!is.na(pp[,s_compare]), !is.na(pp[,u_compare]), dnn=c("SDE", "UODB"))
+  t$t3 <- table(!is.na(pp[,s_compare]), !is.na(pp[,p_compare]), dnn=c("SDE", "Parser"))
+  
+  t$t4 <- table(pp[,p_compare], pp[,u_compare], dnn=c("Parser", "UODB"), useNA = "always")
+  t$t5 <- table(pp[,s_compare], pp[,u_compare], dnn=c("SDE", "UODB"), useNA = "always")
+  t$t6 <- table(pp[,s_compare], pp[,p_compare], dnn=c("SDE", "Parser"), useNA = "always")  
+  
+  return(t)
+}
 
 ```
 # To Do
@@ -109,8 +123,17 @@ data.frame(
             ) %>% datatable()
 ```
 
-# Gleason (Primary/Secondary)
+# All Comparisons
+```{r}
 
+
+t <- lapply(vars, allcomparisons)
+t <- do.call(rbind, t)
+
+kable(t)
+```
+
+# Gleason
 ```{r}
 glreport <- data.frame(
   Category = c(
@@ -121,39 +144,52 @@ glreport <- data.frame(
     "Complete cases from UODB and Parser",
     "Complete cases from UODB, SDE, Parser"
   ),
-  Primary = c(
-    sum(!is.na(pp$u_gprimp)),
-    sum(!is.na(pp$s_gprimp)),
-    sum(!is.na(pp$p_gprimp)),
-    sum(!is.na(pp$u_gprimp) & !is.na(pp$s_gprimp)),
-    sum(!is.na(pp$u_gprimp) & !is.na(pp$p_gprimp)),
-    sum(!is.na(pp$u_gprimp) & !is.na(pp$s_gprimp) & !is.na(pp$p_gprimp))
-  ),
-  Secondary = c(
-    sum(!is.na(pp$u_gsecondp)),
-    sum(!is.na(pp$s_gsecondp)),
-    sum(!is.na(pp$p_gsecondp)),
-    sum(!is.na(pp$u_gsecondp) & !is.na(pp$s_gsecondp)),
-    sum(!is.na(pp$u_gsecondp) & !is.na(pp$p_gsecondp)),
-    sum(!is.na(pp$u_gsecondp) & !is.na(pp$s_gsecondp) & !is.na(pp$p_gsecondp))
-  ),
-  Both = c(
-    sum(pp$u_glcomplete),
-    sum(pp$s_glcomplete),
-    sum(pp$p_glcomplete),
-    sum(pp$u_glcomplete & pp$s_glcomplete),
-    sum(pp$u_glcomplete & pp$p_glcomplete),
-    sum(pp$u_glcomplete & pp$s_glcomplete & pp$p_glcomplete)
+  Gleason = c(
+    sum(!is.na(pp$u_glcombined)),
+    sum(!is.na(pp$s_glcombined)),
+    sum(!is.na(pp$p_glcombined)),
+    sum(!is.na(pp$u_glcombined) & !is.na(pp$s_glcombined)),
+    sum(!is.na(pp$u_glcombined) & !is.na(pp$p_glcombined)),
+    sum(!is.na(pp$u_glcombined) & !is.na(pp$s_glcombined) & !is.na(pp$p_glcombined))
   )
 )
 
 kable(glreport)
+
+crosstables("glcombined")
 ```
 
-# All Comparisons
+# T Stage
 ```{r}
-t <- lapply(vars, allcomparisons)
-t <- do.call(rbind, t)
+crosstables("tstagep")
+```
 
-kable(t)
+# N Stage
+```{r}
+crosstables("tstagep")
+```
+
+# Path Margin Positive
+```{r}
+crosstables("pathmgnpos")
+```
+
+# Path ECE Positive
+```{r}
+crosstables("pathecepos")
+```
+
+# Path SVI Positive
+```{r}
+crosstables("pathsvipos")
+```
+
+# Path Nodes Positive
+```{r}
+crosstables("pathnodes_positive")
+```
+
+# Path Nodes Dissected
+```{r}
+crosstables("pathnodes_dissected")
 ```

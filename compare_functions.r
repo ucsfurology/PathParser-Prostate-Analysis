@@ -5,7 +5,6 @@ vars <- c("glcombined",
 
 
 # Function to compare 2 data types against each other
-
 compare2 <- function(x, y, varname) {
   # x is the first data source that will be used in the comparison
   # y is the first data source that will be used in the comparison
@@ -15,7 +14,7 @@ compare2 <- function(x, y, varname) {
   
   total <- sum(!is.na(pp[,x_compare] == pp[,y_compare]))
   correct <- sum(pp[,x_compare] == pp[,y_compare], na.rm=T)
-
+  
   result <- c(
     sprintf("%.0f",total), 
     sprintf("%.1f%%", (correct/total)*100)
@@ -32,9 +31,8 @@ compare3 <- function(varname) {
   p_compare <- paste0("p_",varname)
   s_compare <- paste0("s_",varname)
   u_compare <- paste0("u_",varname)
-  total <- sum(!is.na(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare]))
+  total <- sum(!is.na(pp[,u_compare]) & !is.na(pp[,s_compare]) & !is.na(pp[,p_compare]))
   correct <- sum(pp[,u_compare] == pp[,s_compare] & pp[,u_compare] == pp[,p_compare], na.rm = T)
-  
   result <- c(
     sprintf("%.0f",total), 
     sprintf("%.1f%%", (correct/total)*100)
@@ -54,3 +52,4 @@ allcomparisons <- function(x) {
     compare3(x)
   )  
 }
+
