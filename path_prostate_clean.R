@@ -121,5 +121,15 @@ pp$s_glcombined <- factor(pp$s_glcombined,
                             "Missing"
                           )
                         )
+
+## Fix Parser Path Nodes positive field
+# This will eventually be done in java as well, but for now need to get accurate results here
+# if the field shows "none" or "negative", it is being ignored, instead of being saved as 0
+pp$p_pathnodes_positive[grepl("none", pp$p_pathnodes_positive_raw, ignore.case = T)] <- "0"
+pp$p_pathnodes_positive[grepl("negative", pp$p_pathnodes_positive_raw, ignore.case = T)] <- "0"
+
+# strip any punctuation from the pathnodes_positive field
+pp$p_pathnodes_positive <- str_replace_all(pp$p_pathnodes_positive, "[:punct:]", "")
+
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
