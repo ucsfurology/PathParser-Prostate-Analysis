@@ -106,6 +106,31 @@ crosstables <- function(varname) {
   return(t)
 }
 
+# this function calculates how often parser and SDE had exact same result
+# but were incorrect compared to UODB
+
+compareqc <- function(varname) {
+  # varname represents variables to compare
+  u_compare <- paste0("u_",varname)
+  s_compare <- paste0("s_",varname)
+  p_compare <- paste0("p_",varname)
+
+  nomiss <- !is.na(pp[,u_compare]) & !is.na(pp[,s_compare]) & !is.na(pp[,p_compare])
+  
+  total <- sum(!is.na(pp[,u_compare] == pp[,s_compare]) & !is.na(pp[,u_compare] == pp[,p_compare]))
+  
+  correct <- total - sum(pp[nomiss,p_compare] == pp[nomiss,s_compare] & pp[nomiss, p_compare] != pp[nomiss, u_compare], na.rm = T)
+
+  result <- c(
+    sprintf("%.0f",total), 
+    sprintf("%.1f%%", (correct/total)*100)
+  )
+  m <- matrix(result, 1, 2)
+  colnames(m) <- c("(n)", "(%)")
+  rownames(m) <- varname
+  return(m)
+}
+
 ```
 # To Do
 
@@ -125,8 +150,6 @@ data.frame(
 
 # All Comparisons
 ```{r}
-
-
 t <- lapply(vars, allcomparisons)
 t <- do.call(rbind, t)
 
@@ -185,6 +208,7 @@ crosstables("pathsvipos")
 ```
 
 # Path Nodes Positive
+
 ```{r}
 crosstables("pathnodes_positive")
 ```
@@ -192,4 +216,38 @@ crosstables("pathnodes_positive")
 # Path Nodes Dissected
 ```{r}
 crosstables("pathnodes_dissected")
+```
+
+# Quality Control Cases
+Need to evaluate the number of cases in which the parser and the SDE had the same result, but were both wrong compared the gold standard, UODB
+
+## Gleason Mismatch
+- 1 case
+- case row 1299
+- Parser and SDE both read 3+4, UODB reads 3+3
+- path report says, "3+4=7; primary pattern 3, secondary pattern 3."
+
+## Path ECE Mismatch
+- 1 case
+- case row 1767
+- Path report reads, "Focal, positive". Parser called it positive. SDE entered "Positive", UODB is marked as negative
+
+## Path Nodes Dissected
+- 3 cases
+- row index 720
+- row index 1937
+- row index 1978
+
+
+```{r}
+t <- lapply(vars, compareqc)
+t <- do.call(rbind, t)
+u <- as.data.frame(t)
+u$variable <- row.names(t)
+row.names(u) <- NULL
+u <- u[c("variable", "(n)", "(%)")]
+
+
+
+kable(u)
 ```
