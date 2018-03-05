@@ -132,7 +132,6 @@ compareqc <- function(varname) {
 }
 
 ```
-# To Do
 
 # Available Data
 
@@ -208,7 +207,6 @@ crosstables("pathsvipos")
 ```
 
 # Path Nodes Positive
-
 ```{r}
 crosstables("pathnodes_positive")
 ```
@@ -219,20 +217,42 @@ crosstables("pathnodes_dissected")
 ```
 
 # Quality Control Cases
+
 Need to evaluate the number of cases in which the parser and the SDE had the same result, but were both wrong compared the gold standard, UODB
 
 ## Gleason Mismatch
+
 - 1 case
 - case row 1299
 - Parser and SDE both read 3+4, UODB reads 3+3
 - path report says, "3+4=7; primary pattern 3, secondary pattern 3."
 
 ## Path ECE Mismatch
+
 - 1 case
 - case row 1767
 - Path report reads, "Focal, positive". Parser called it positive. SDE entered "Positive", UODB is marked as negative
 
 ## Path Nodes Dissected
+```{r}
+t <- pp[pp$u_pathnodes_dissected != pp$s_pathnodes_dissected,]
+
+
+wrongnodes_s_u <- t %>%
+  filter(!is.na(u_pathnodes_dissected)) %>%
+           select(de_id, u_pathnodes_dissected, s_pathnodes_dissected, p_pathnodes_dissected)
+  
+t <- pp[pp$u_pathnodes_dissected != pp$p_pathnodes_dissected,]
+wrongnodes_p_u <- t %>%
+  filter(!is.na(u_pathnodes_dissected)) %>%
+           select(de_id, u_pathnodes_dissected, p_pathnodes_dissected, p_pathnodes_dissected)
+
+
+View(wrongnodes_s_u)
+pp$s_pathnodes_dissected
+
+```
+
 - 3 cases
 - row index 720
 - row index 1937
@@ -250,4 +270,14 @@ u <- u[c("variable", "(n)", "(%)")]
 
 
 kable(u)
+```
+
+# Looking up specific cases
+```{r}
+
+pp %>%
+  filter(u_glcombined == "4+5") %>%
+  filter(s_glcombined == "4+4") %>%
+  select(de_id)
+
 ```

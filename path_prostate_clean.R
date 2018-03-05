@@ -3,7 +3,7 @@
 library(stringr)
 
 # Import data from Coop
-pp <- read.csv("data/raw/SQL_QC_UODB_SDE_PARSE_03NOV2017.csv",
+pp <- read.csv("data/raw/SQL_QC_UODB_SDE_PARSE_20FEB2018.csv",
               header = T,
               stringsAsFactors = F,
               na.strings = "")
@@ -15,7 +15,7 @@ pp$de_id <- 1:nrow(pp)
 pp$ucsf_mrn <- NULL
 pp$pat_id <- NULL
 
-# Define useful vectors for field names
+# Define useful vectors for field names for use later
 v <- list()
 v$sources <- c("u", "s", "p")
 v$gnames <- c("_gprimp", "_gsecondp", "_gtertp") 
