@@ -19,7 +19,11 @@ We show that a rule-based approach combined with structured data entry by clinic
 ## Conclusion
 Combined use of SDEs during routine clinical care and rule-based information extraction provide highly accurate data extraction. Since February 2018, these SDEs have been incorporated into the Epic Foundation repository, allowing any facility using EPIC EHR to implement them.
 
-# Description of Files
+# Repository Info
+
+This repository contains the analytic and reporting files for the above project.
+
+## Description of Files
 - `path_prostate_clean.R`: imports raw data from parser, SDEs, and manual entry table in database, prepares for analysis
 
 - `compare_functions.r`: functions used to compare results from any two sets of data sources (SDE compared to manual abstraction, for example), and all three sources together.
