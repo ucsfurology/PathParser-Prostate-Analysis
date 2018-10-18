@@ -164,6 +164,7 @@ glreport <- data.frame(
     "Complete cases from Parser",
     "Complete cases from UODB and SDE",
     "Complete cases from UODB and Parser",
+    "Complete cases from Parser and SDE",
     "Complete cases from UODB, SDE, Parser"
   ),
   Gleason = c(
@@ -172,6 +173,7 @@ glreport <- data.frame(
     sum(!is.na(pp$p_glcombined)),
     sum(!is.na(pp$u_glcombined) & !is.na(pp$s_glcombined)),
     sum(!is.na(pp$u_glcombined) & !is.na(pp$p_glcombined)),
+    sum(!is.na(pp$p_glcombined) & !is.na(pp$s_glcombined)),
     sum(!is.na(pp$u_glcombined) & !is.na(pp$s_glcombined) & !is.na(pp$p_glcombined))
   )
 )

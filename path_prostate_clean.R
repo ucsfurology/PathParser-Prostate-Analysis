@@ -1,19 +1,76 @@
 # Load relevant libraries
 # Data Cleaning
 library(stringr)
+library(dplyr)
+library(magrittr)
 
-# Import data from Coop
+# Import data
 pp <- read.csv("data/raw/SQL_QC_UODB_SDE_PARSE_20FEB2018.csv",
               header = T,
               stringsAsFactors = F,
               na.strings = "")
 
+# IMPORT new UODB RP DATA
+sp <- read.csv("data/raw/surgpath_export_20181018.csv",
+               header = T,
+               stringsAsFactors = F,
+               na.strings = c("","NULL"))
+
+pp %<>%
+  left_join(sp, by = c("UCSF_MRN" = "UcsfID"))
+
 colnames(pp) <- str_to_lower(colnames(pp))
 
-# Drop PatID (its blank, but just to be sure in future data extracts)
-pp$de_id <- 1:nrow(pp)
-pp$ucsf_mrn <- NULL
-pp$pat_id <- NULL
+pp$prostatewgt <- NULL
+
+pp$u_gprimp <- as.numeric(pp$glsnpri)
+pp$glsnpri <- NULL
+
+pp$u_gsecondp <- as.numeric(pp$glsnsec)
+pp$glsnsec <- NULL
+
+pp$glsntertiary[pp$glsntertiary == "3+4+5"] <- "5"
+pp$glsntertiary[pp$glsntertiary == "4+3+5"] <- "5"
+pp$u_gtertp <- as.numeric(pp$glsntertiary)
+pp$glsntertiary <- NULL
+
+
+pp$u_nstagep <- pp$pstagen
+pp$pstagen <- NULL
+
+pp$u_tstagep <- pp$pstaget
+pp$pstaget <- NULL
+
+
+pp$u_pathmgnpos <- as.numeric(!pp$mgnnone)
+pp$mgnnone <- NULL
+
+
+
+pp$u_pathecepos <- as.numeric(pp$eceinvlvd)
+pp$eceinvlvd <- NULL
+pp$ecenone <- NULL
+
+pp$u_pathsvipos <- as.numeric(!pp$svnone)
+pp$svnone <- NULL
+
+pp$u_pathnodes_status <- as.numeric(!pp$lymphnodesnone)
+pp$lymphnodesnone <- NULL
+
+mysum <- function(x)sum(x,na.rm = any(!is.na(x))) 
+
+pp$u_pathnodes_dissected <- pp %>%
+  select(lymphnodesdsctlt, lymphnodesdsctrt, lymphnodesdsctukn) %>%
+  apply(., 1, FUN = mysum)
+
+pp$u_pathnodes_positive <- pp %>%
+  select(lymphnodesposlt, lymphnodesposrt, lymphnodesposukn) %>%
+  apply(., 1, FUN = mysum)
+
+
+pp %<>%
+  select(-lymphnodesdsctlt, -lymphnodesdsctrt, -lymphnodesdsctukn, -lymphnodesposlt, -lymphnodesposrt, -lymphnodesposukn)
+
 
 # Define useful vectors for field names for use later
 v <- list()
@@ -130,6 +187,12 @@ pp$p_pathnodes_positive[grepl("negative", pp$p_pathnodes_positive_raw, ignore.ca
 
 # strip any punctuation from the pathnodes_positive field
 pp$p_pathnodes_positive <- str_replace_all(pp$p_pathnodes_positive, "[:punct:]", "")
+
+# Drop PatID (its blank, but just to be sure in future data extracts)
+pp$de_id <- 1:nrow(pp)
+pp$ucsf_mrn <- NULL
+pp$pat_id <- NULL
+
 
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
