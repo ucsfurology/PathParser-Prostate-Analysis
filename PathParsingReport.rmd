@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = F, warning = F, message = F, fig.width = 12, cache 
 ```
 
 
-```{r}
+```{r, cache = F}
 # load packages
 library(dplyr)
 library(tidyr)
@@ -24,7 +24,8 @@ library(knitr)
 library(pander)
 library(stargazer)
 library(DT)
-
+library(irr)
+library(rel) #for correlation analysis
 
 # load data
 load(file="data/tidy/pp.rda")
@@ -37,6 +38,15 @@ vars <- c("glcombined",
           "pathmgnpos", "pathecepos", "pathsvipos", 
           "pathnodes_dissected", "pathnodes_positive", "pathnodes_status",
           "tstagep", "nstagep")
+
+# categorical variables
+catvars <- c("glcombined", 
+          "pathmgnpos", "pathecepos", "pathsvipos", 
+          "pathnodes_status", "tstagep", "nstagep")
+
+# continuous variables
+contvars <- c("pathnodes_dissected", "pathnodes_positive")
+
 ```
 
 
@@ -61,6 +71,7 @@ compare2 <- function(x, y, varname) {
   rownames(m) <- varname
   return(m)
 }
+
 
 # Function to compare all 3 data types against each other
 compare3 <- function(varname) {
@@ -155,6 +166,153 @@ t <- do.call(rbind, t)
 kable(t)
 ```
 
+# Correlation Coefficients
+
+```{r}
+raters <- c("u", "s", "p")
+
+catvargrid <- expand.grid(raters, catvars)
+catvargrid <- paste0(catvargrid[,1], "_", catvargrid[,2])
+
+# gleason comparisons
+combo2 <- combn(names(pp[,catvargrid[1:3]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[1:3]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# path margin positive comparisons
+combo2 <- combn(names(pp[,catvargrid[4:6]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[4:6]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# Path ECE positive
+combo2 <- combn(names(pp[,catvargrid[7:9]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[7:9]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# Path SVI positive
+combo2 <- combn(names(pp[,catvargrid[10:12]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[10:12]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# t stage
+combo2 <- combn(names(pp[,catvargrid[16:18]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[16:18]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# N stage
+combo2 <- combn(names(pp[,catvargrid[19:21]]),2, simplify = F)
+combo3 <- combn(names(pp[,catvargrid[19:21]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
+
+spi(pp[combo3[[1]]])
+
+# continuous variables
+contvargrid <- expand.grid(raters, contvars)
+contvargrid <- paste0(contvargrid[,1], "_", contvargrid[,2])
+
+# nodes dissected
+combo2 <- combn(names(pp[,contvargrid[1:3]]),2, simplify = F)
+combo3 <- combn(names(pp[,contvargrid[1:3]]),3, simplify = F)
+
+combo2
+
+lapply(1:3, function(x) icc(pp[combo2[[x]]]))
+
+icc(pp[combo3[[1]]])
+
+# nodes positive
+combo2 <- combn(names(pp[,contvargrid[4:6]]),2, simplify = F)
+combo3 <- combn(names(pp[,contvargrid[4:6]]),3, simplify = F)
+
+combo2
+lapply(1:3, function(x) icc(pp[combo2[[x]]]))
+
+icc(pp[combo3[[1]]])
+
+pp$p_pathnodes_positive <- as.integer(pp$p_pathnodes_positive)
+
+
+
+```
+
+``` {r eval = F}
+t <- cohen.kappa(pp[,combo2[[1]]])
+combo2[[1]]
+t
+
+
+
+kappa()
+pp[,c("u_glcombined", "p_glcombined")]
+kappa()
+str(v[[1]])
+
+kappam.fleiss(pp[combo3[[1]]])
+
+pp[combo3[[1]]]
+
+cohen.kappa(pp[combo3[[1]]], all=T)
+?cohen.kappa
+ratings <- matrix(rep(1:5,4),ncol=4)
+ratings[1,2] <- ratings[2,3] <- ratings[3,4] <- NA
+ratings[2,1] <- ratings[3,2] <- ratings[4,3] <- 1
+
+cohen.kappa(ratings)
+    
+?psych
+
+
+t <- 
+  
+
+
+
+?kappa2
+kappa()
+summary(v[[1]])
+
+r_glcombined <- pp %>% select(contains("glcombined"))
+
+kappaCohen(r_glcombined)
+
+tocheck <- combn(rownames(r_glcombined), 2, simplify = F)
+names(tocheck) <- sapply(tocheck, paste, collapse = " - ")
+
+
+
+raters <- c("u", "s", "p")
+ratercombo <- combn(raters, 2, simplify = F)
+
+
+paste0(ratercombo, "_", catvars)
+
+kappa2()
+
+
+```
+
 # Gleason
 ```{r}
 glreport <- data.frame(
@@ -195,27 +353,47 @@ crosstables("tstagep")
 
 # Path Margin Positive
 ```{r}
+pp %>%
+  filter(p_pathmgnpos_wmiss == 'Missing') %>%
+  select(u_pathmgnpos, s_pathmgnpos, p_pathmgnpos_wmiss, p_pathmgnpos_raw) %>%
+  kable() 
+
+
+
 crosstables("pathmgnpos")
+
 ```
 
 # Path ECE Positive
-```{r}
+```{r, eval = F}
+pp %>%
+  filter(p_pathecepos_wmiss == 'Missing') %>%
+  select(u_pathecepos, s_pathecepos, p_pathecepos_wmiss, p_pathecepos_raw) %>%
+  kable()
+
 crosstables("pathecepos")
+
 ```
 
 # Path SVI Positive
-```{r}
+```{r, eval=F}
+pp %>%
+  filter(p_pathsviepos == 'Missing') %>%
+  select(u_pathsvipos, s_pathsvipos, p_pathsvipos, p_pathsvipos_raw) %>%
+  kable()
+
+
 crosstables("pathsvipos")
 ```
 
 # Path Nodes Positive
-```{r}
+```{r, eval = F}
 crosstables("pathnodes_positive")
 ```
 
 # Path Nodes Dissected
-```{r}
-crosstables("pathnodes_dissected")
+```{r, eval = F}
+# crosstables("pathnodes_dissected")
 ```
 
 # Quality Control Cases
@@ -268,8 +446,6 @@ u <- as.data.frame(t)
 u$variable <- row.names(t)
 row.names(u) <- NULL
 u <- u[c("variable", "(n)", "(%)")]
-
-
 
 kable(u)
 ```

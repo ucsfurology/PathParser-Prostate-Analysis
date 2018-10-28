@@ -14,7 +14,7 @@ pp <- read.csv("data/raw/SQL_QC_UODB_SDE_PARSE_20FEB2018.csv",
 sp <- read.csv("data/raw/surgpath_export_20181018.csv",
                header = T,
                stringsAsFactors = F,
-               na.strings = c("","NULL"))
+               na.strings = c(""))
 
 pp %<>%
   left_join(sp, by = c("UCSF_MRN" = "UcsfID"))
@@ -183,16 +183,26 @@ pp$s_glcombined <- factor(pp$s_glcombined,
 # This will eventually be done in java as well, but for now need to get accurate results here
 # if the field shows "none" or "negative", it is being ignored, instead of being saved as 0
 pp$p_pathnodes_positive[grepl("none", pp$p_pathnodes_positive_raw, ignore.case = T)] <- "0"
+pp$p_pathnodes_positive[grepl(" one", pp$p_pathnodes_positive_raw, ignore.case = T)] <- "1"
 pp$p_pathnodes_positive[grepl("negative", pp$p_pathnodes_positive_raw, ignore.case = T)] <- "0"
 
 # strip any punctuation from the pathnodes_positive field
-pp$p_pathnodes_positive <- str_replace_all(pp$p_pathnodes_positive, "[:punct:]", "")
+pp$p_pathnodes_positive <- as.numeric(str_replace_all(pp$p_pathnodes_positive, "[:punct:]", ""))
+pp$p_pathnodes_dissected <- as.numeric(pp$p_pathnodes_dissected)
 
 # Drop PatID (its blank, but just to be sure in future data extracts)
 pp$de_id <- 1:nrow(pp)
-pp$ucsf_mrn <- NULL
+
+#pp$ucsf_mrn <- NULL
 pp$pat_id <- NULL
 
+pp$p_pathecepos_wmiss <- pp$p_pathecepos
+pp$p_pathsvipos_wmiss <- pp$p_pathsvipos
+pp$p_pathmgnpos_wmiss <- pp$p_pathmgnpos
+
+pp$p_pathecepos <- as.logical(pp$p_pathecepos)
+pp$p_pathsvipos <- as.logical(pp$p_pathsvipos)
+pp$p_pathmgnpos <- as.logical(pp$p_pathmgnpos)
 
 # Export Data
 save(pp, v, file="data/tidy/pp.rda")
