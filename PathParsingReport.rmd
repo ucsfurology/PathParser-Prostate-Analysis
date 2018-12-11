@@ -238,22 +238,18 @@ combo3 <- combn(names(pp[,contvargrid[1:3]]),3, simplify = F)
 
 combo2
 
-lapply(1:3, function(x) icc(pp[combo2[[x]]]))
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
 
-icc(pp[combo3[[1]]])
+ckap(pp[combo3[[1]]])
 
 # nodes positive
 combo2 <- combn(names(pp[,contvargrid[4:6]]),2, simplify = F)
 combo3 <- combn(names(pp[,contvargrid[4:6]]),3, simplify = F)
 
 combo2
-lapply(1:3, function(x) icc(pp[combo2[[x]]]))
+lapply(1:3, function(x) ckap(pp[combo2[[x]]]))
 
-icc(pp[combo3[[1]]])
-
-pp$p_pathnodes_positive <- as.integer(pp$p_pathnodes_positive)
-
-
+ckap(pp[combo3[[1]]])
 
 ```
 
