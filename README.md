@@ -1,23 +1,20 @@
-# Automating the Capture of Structured Data for Surgical Oncology Clinical Care and Research
+# Automating the Capture of Structured Pathology Data for Urologic Oncology Clinical Care and Research
 
 Anobel Y. Odisho, MD MPH, Mark Bridge, MS, Mitchell Webb, MBA, Niloufar Ameli, MS, Renu S. Eapen, MD, Frank Stauf, Janet E. Cowan, MS, Samuel L. Washington III, MD, Annika Herlemann, MD, Peter R. Carroll, MD MPH, Matthew R. Cooperberg, MD MPH
 
 Department of Urology, University of California, San Francisco, Helen Diller Family Comprehensive Cancer Center
 
-## Objective
-Cancer pathology findings are critical for many aspects of care but are often locked away as unstructured free-text. We report a hybrid approach using an information extraction pipeline for prostate pathology details from pathology reports combined with structured data entry integrated into routine care. We compare accuracy to manual abstraction.
+## Introduction
+Cancer pathology findings are critical for many aspects of care but are often locked away as unstructured free-text. We report a hybrid approach using a natural language processing (NLP) information extraction pipeline for prostate pathology details from pathology reports combined with structured data entry integrated into routine care. We compare concordance between NLP, structured data entry, and manual abstraction.
 
 ## Materials and Methods
-From February 2016, clinicians used note templates with custom Smart Data Elements (SDEs) during routine clinical care for men with prostate cancer. We developed an NLP information extraction system to parse pathology reports and extract structured data. We compare accuracy of clinician-entered SDEs, parsed data, and manually abstracted data.
+From February 2016, clinicians used note templates with custom Smart Data Elements (SDEs) during routine clinical care for men with prostate cancer. We developed an NLP information extraction system to parse pathology reports and extract structured data. We compare accuracy and concordance of clinician-entered SDEs, NLP parsed data, and manually abstracted data.
 
 ## Results
-There were 460 patients with parsed data, 289 with SDEs, 346 with manually abstracted data, and 93 from all three. For Gleason scores, clinician SDE and NLP accuracy was 96.5% and 98.0%, respectively, compared to manual abstraction. For margin status, extracapsular extension, and seminal vesicle invasion, SDEs accuracy was 96-99% and NLP accuracy was 97-99%. 
-
-## Discussion
-We show that a rule-based approach combined with structured data entry by clinicians integrated into routine clinical care provides superior accuracy than manual data abstraction. This hybrid paradigm overcomes limitations of pure NLP and human entry, which independently do not achieve adequate accuracy for clinical research. 
+There were 523 patients with NLP extracted data, 319 with SDE data, 555 with manually abstracted data, and 182 from all three. For Gleason scores, clinician SDE and NLP accuracy was 95.6% and 95.8%, respectively, compared to manual abstraction, with Cohen’s kappa 0.93 (95% CI 0.90 – 0.97). For margin status, extracapsular extension, and seminal vesicle invasion, SDEs accuracy was 93.8 – 96.6% and NLP accuracy was 93.1-93.8%, with Cohen’s kappa ranging from 0.79 to 0.96.
 
 ## Conclusion
-Combined use of SDEs during routine clinical care and rule-based information extraction provide highly accurate data extraction. Since February 2018, these SDEs have been incorporated into the Epic Foundation repository, allowing any facility using EPIC EHR to implement them.
+We show that natural language processing of prostate pathology reports combined with structured data entry by clinicians during routine clinical care can be integrated to generate high-quality structured data in a production environment in a busy clinical practice. 
 
 # Repository Info
 
